@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoteBook | Stay Updated For College Events</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #E96A24;
+            --primary-bright: #ff8a4c;
+            --bg: #050608;
+            --sidebar: #0D0F14;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.07);
+            --text-main: #FFFFFF;
+            --text-dim: #94A3B8;
+            --radius-lg: 28px;
+            --radius-md: 18px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        body { background: var(--bg); color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+
+        /* Aesthetics */
+        .orb { position: fixed; width: 600px; height: 600px; border-radius: 50%; filter: blur(140px); z-index: -1; opacity: 0.18; pointer-events: none; }
+        .orb-1 { top: -15%; left: -10%; background: var(--primary); }
+        .orb-2 { bottom: -15%; right: -10%; background: #3b82f6; }
+
+        /* Auth/Gate */
+        .auth-center { height: 100vh; display: grid; place-items: center; text-align: center; padding: 20px; }
+        .auth-card { background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--glass-border); padding: 50px; border-radius: var(--radius-lg); width: 100%; max-width: 480px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        .portal-option { padding: 32px; cursor: pointer; border-radius: var(--radius-md); background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); margin: 16px 0; }
+        .portal-option:hover { border-color: var(--primary); transform: translateY(-8px); background: rgba(233, 106, 36, 0.05); }
+
+        /* Layout */
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 280px; background: var(--sidebar); border-right: 1px solid var(--glass-border); padding: 40px 20px; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; }
+        .main-content { margin-left: 280px; flex: 1; padding: 60px; }
+
+        .nav-item { padding: 14px 20px; border-radius: 16px; color: var(--text-dim); cursor: pointer; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+        .nav-item.active { background: rgba(233, 106, 36, 0.1); color: var(--primary); border: 1px solid rgba(233, 106, 36, 0.2); }
+        .nav-item:hover:not(.active) { background: var(--glass); color: white; }
+
+        /* Cards */
+        .glass-card { background: var(--glass); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 28px; position: relative; }
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 16px 30px; border-radius: 14px; font-weight: 700; cursor: pointer; width: 100%; }
+        .btn-primary:hover { transform: translateY(-2px); background: var(--primary-bright); }
+        .btn-delete { background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 10px 18px; border-radius: 12px; cursor: pointer; font-weight: 600; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 28px; }
+        .tag { background: rgba(233, 106, 36, 0.1); color: var(--primary); padding: 4px 12px; border-radius: 100px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+
+        input, select, textarea { width: 100%; padding: 16px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); border-radius: 14px; color: white; margin-bottom: 14px; font-family: inherit; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); display: grid; place-items: center; z-index: 1000; }
+        
+        [hidden] { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <!-- VIEW 1: PORTAL SELECTION -->
+
+    <section id="view-portal" class="auth-center">
+        <div class="auth-card">
+            <h1 style="font-size: 3rem; letter-spacing: -2px; margin-bottom: 10px;">Event<span style="color:var(--primary)">Pro</span></h1>
+            <p style="color:var(--text-dim); margin-bottom: 40px;">Professional Campus Management</p>
+            <div class="portal-option" onclick="handlePortalSelect('student')">
+                <h2>🎓 Student</h2>
+                <p style="color:var(--text-dim)">Join hackathons & view notices</p>
+            </div>
+            <div class="portal-option" onclick="handlePortalSelect('admin')">
+                <h2>🔑 Admin</h2>
+                <p style="color:var(--text-dim)">Control & publish campus events</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- VIEW 2: GATE -->
+    <section id="view-gate" class="auth-center" hidden>
+        <div class="auth-card">
+            <h2 id="gate-title" style="margin-bottom: 30px;">Access Portal</h2>
+            <div style="display: flex; gap: 12px; margin-bottom: 30px;">
+                <button class="btn-primary" style="flex:1" onclick="toggleGateForm('login')">Login</button>
+                <button class="btn-primary" style="flex:1; background:var(--glass)" onclick="toggleGateForm('signup')">Sign Up</button>
+            </div>
+
+            <form id="form-login">
+                <input type="text" id="login-user" placeholder="Username" required>
+                <input type="password" id="login-pass" placeholder="Password" required>
+                <button type="submit" class="btn-primary">Sign In</button>
+            </form>
+
+            <form id="form-signup" hidden>
+                <input type="text" id="sig-name" placeholder="Full Name" required>
+                <input type="text" id="sig-user" placeholder="Username" required>
+                <input type="password" id="sig-pass" placeholder="Password" required>
+                <input type="tel" id="sig-phone" placeholder="Phone" required>
+            
+                <div id="sig-student-fields"><input type="text" id="sig-roll" placeholder="Roll Number"><input type="text" id="sig-course" placeholder="Course"></div>
+                <div id="sig-admin-fields" hidden><input type="text" id="sig-role" placeholder="Role"><input type="text" id="sig-jobid" placeholder="Job ID"></div>
+                <button type="submit" class="btn-primary">Register</button>
+            </form>
+            <p onclick="switchView('portal')" style="margin-top:25px; color:var(--text-dim); cursor:pointer;">← Back</p>
+        </div>
+    </section>
+
+    <!-- VIEW 3: MAIN APP -->
+    <section id="view-app" class="app-container" hidden>
+        <aside class="sidebar">
+            <h2 style="margin-bottom: 50px; padding-left: 20px;">Event<span style="color:var(--primary)">Pro</span></h2>
+            
+            <nav id="nav-admin" hidden>
+                <div class="nav-item active" onclick="showSection('admin-stats')">Dashboard</div>
+                <div class="nav-item" onclick="showSection('admin-notices')">Manage Notices</div>
+                <div class="nav-item" onclick="showSection('admin-create')">Create Activity</div>
+                <div class="nav-item" onclick="showSection('admin-students')">Attendee List</div>
+                <div class="nav-item" onclick="showSection('profile-view')">Profile</div>
+            </nav>
+
+            <nav id="nav-student" hidden>
+                <div class="nav-item active" id="student-nav-Notice" onclick="filterStudentFeed('Notice')">📢 Announcements</div>
+                <div class="nav-item" id="student-nav-Hackathon" onclick="filterStudentFeed('Hackathon')">💻 Hackathons</div>
+                <div class="nav-item" id="student-nav-Fest" onclick="filterStudentFeed('Fest')">🎉 Cultural Fests</div>
+                <div class="nav-item" onclick="showSection('profile-view')">👤 Student Profile</div>
+            </nav>
+
+            <div style="margin-top: auto;">
+                <div class="nav-item" onclick="logout()" style="color:#ef5e44">Logout</div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- Profile -->
+            <div id="profile-view" class="subview" hidden>
+                <h1>User <span style="color:var(--primary)">Profile</span></h1>
+                <div class="glass-card" style="max-width: 550px; margin-top:30px;" id="profile-card-data"></div>
+                
+            </div>
+
+            <!-- Admin Stats -->
+            <div id="admin-stats" class="subview">
+                <div class="grid" style="margin-bottom: 50px;">
+                    <div class="glass-card"><h3>Active Events</h3><h1 id="count-e">0</h1></div>
+                    <div class="glass-card"><h3>Registrations</h3><h1 id="count-r">0</h1></div>
+                </div>
+                <h2 style="margin-bottom: 25px;">Events Directory</h2>
+                <div id="admin-event-list" class="grid"></div>
+            </div>
+
+            <!-- Admin Notice Management -->
+            <div id="admin-notices" class="subview" hidden>
+                <h2 style="margin-bottom: 25px;">Official Memorandums</h2>
+                <div id="admin-notice-list" class="grid"></div>
+            </div>
+
+            <!-- Admin Create Form -->
+            <div id="admin-create" class="subview" hidden>
+                <div class="glass-card" style="max-width: 650px;">
+                    <h2>Publish New Content</h2>
+                    <form id="event-form">
+                        <input type="text" id="ev-title" placeholder="Title" required>
+                        <div style="display:flex; gap:16px"><input type="date" id="ev-date" required><select id="ev-cat"><option value="Notice">Announcement</option><option value="Hackathon">Hackathon</option><option value="Fest">Fest</option></select></div>
+                        <textarea id="ev-desc" rows="5" placeholder="Description..."></textarea>
+                        <button type="submit" class="btn-primary">Launch Now</button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="admin-students" class="subview" hidden>
+                <h2>Registrations</h2>
+                <div class="glass-card"><table style="width:100%; text-align:left; border-collapse:collapse;"><thead><tr style="color:var(--text-dim); border-bottom:1px solid var(--glass-border);"><th style="padding:18px;">Student</th><th style="padding:18px;">Activity</th><th style="padding:18px;">Phone</th></tr></thead><tbody id="reg-list"></tbody></table></div>
+            </div>
+
+            <!-- Student Content -->
+            <div id="student-feed-container" class="subview" hidden>
+                <header style="margin-bottom: 40px;">
+                    <h1 style="font-size: 2.8rem;">Hello, <span id="user-display-name" style="color:var(--primary)">Bharat</span></h1>
+                    <p style="color:var(--text-dim)">Browsing: <span id="current-cat-name" style="color:white; font-weight:700;">Announcements</span></p>
+                </header>
+                <div id="student-feed" class="grid"></div>
+            </div>
+        </main>
+    </section>
+
+    <!-- MODAL -->
+    <div id="reg-modal" class="modal-overlay" hidden>
+        <div class="glass-card" style="width: 420px; padding: 40px;">
+            <h2 id="modal-title">Register</h2>
+            <form id="registration-form">
+                <input type="hidden" id="modal-id">
+                <input type="text" id="reg-name" placeholder="Name" required>
+                <input type="text" id="reg-roll" placeholder="Roll" required>
+                <input type="tel" id="reg-phone" placeholder="Phone" required>
+                <div style="display:flex; gap:12px; margin-top:20px;"><button type="submit" class="btn-primary">Register</button><button type="button" class="btn-primary" style="background:var(--glass)" onclick="closeModal()">Cancel</button></div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
